@@ -1,7 +1,62 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:project_managment_system/Sign_up.dart';
+import 'package:project_managment_system/view/Sign_up.dart';
+
+class LoginInfo {
+  String email;
+  String password;
+  LoginInfo({
+    required this.email,
+    required this.password,
+  });
+
+  LoginInfo copyWith({
+    String? email,
+    String? password,
+  }) {
+    return LoginInfo(
+      email: email ?? this.email,
+      password: password ?? this.password,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'email': email,
+      'password': password,
+    };
+  }
+
+  factory LoginInfo.fromMap(Map<String, dynamic> map) {
+    return LoginInfo(
+      email: map['email'] as String,
+      password: map['password'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory LoginInfo.fromJson(String source) =>
+      LoginInfo.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() => 'LoginInfo(email: $email, password: $password)';
+
+  @override
+  bool operator ==(covariant LoginInfo other) {
+    if (identical(this, other)) return true;
+
+    return other.email == email && other.password == password;
+  }
+
+  @override
+  int get hashCode => email.hashCode ^ password.hashCode;
+}
 
 class LoginPage extends StatelessWidget {
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,6 +98,7 @@ class LoginPage extends StatelessWidget {
                           width: 226,
                           height: 43,
                           child: TextField(
+                            controller: email,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xff77C1C1),
@@ -70,6 +126,7 @@ class LoginPage extends StatelessWidget {
                           width: 226,
                           height: 43,
                           child: TextField(
+                            controller: password,
                             obscureText: true,
                             decoration: InputDecoration(
                               filled: true,

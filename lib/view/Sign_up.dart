@@ -1,7 +1,91 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:project_managment_system/login.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:project_managment_system/bloc/app_bloc.dart';
+import 'package:project_managment_system/login_bloc/login_bloc.dart';
+
+import 'package:project_managment_system/view/login.dart';
+
+class SignUpInfo {
+  String firstname;
+  String lastname;
+  String email;
+  String password;
+  SignUpInfo({
+    required this.firstname,
+    required this.lastname,
+    required this.email,
+    required this.password,
+  });
+
+  SignUpInfo copyWith({
+    String? firstname,
+    String? lastname,
+    String? email,
+    String? password,
+  }) {
+    return SignUpInfo(
+      firstname: firstname ?? this.firstname,
+      lastname: lastname ?? this.lastname,
+      email: email ?? this.email,
+      password: password ?? this.password,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'firstname': firstname,
+      'lastname': lastname,
+      'email': email,
+      'password': password,
+    };
+  }
+
+  factory SignUpInfo.fromMap(Map<String, dynamic> map) {
+    return SignUpInfo(
+      firstname: map['firstname'] as String,
+      lastname: map['lastname'] as String,
+      email: map['email'] as String,
+      password: map['password'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory SignUpInfo.fromJson(String source) =>
+      SignUpInfo.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() {
+    return 'SignUpInfo(firstname: $firstname, lastname: $lastname, email: $email, password: $password)';
+  }
+
+  @override
+  bool operator ==(covariant SignUpInfo other) {
+    if (identical(this, other)) return true;
+
+    return other.firstname == firstname &&
+        other.lastname == lastname &&
+        other.email == email &&
+        other.password == password;
+  }
+
+  @override
+  int get hashCode {
+    return firstname.hashCode ^
+        lastname.hashCode ^
+        email.hashCode ^
+        password.hashCode;
+  }
+}
 
 class SignUpPage extends StatelessWidget {
+  final TextEditingController firstname = TextEditingController();
+  final TextEditingController lastname = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +118,7 @@ class SignUpPage extends StatelessWidget {
                         height: 75,
                       ),
                       Text(
-                        '  Username',
+                        '  First name',
                         style: TextStyle(fontSize: 15),
                       ),
                       Padding(
@@ -43,6 +127,7 @@ class SignUpPage extends StatelessWidget {
                           width: 226,
                           height: 43,
                           child: TextField(
+                            controller: firstname,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xff77C1C1),
@@ -52,7 +137,32 @@ class SignUpPage extends StatelessWidget {
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(10)),
                               ),
-                              hintText: 'Example',
+                              hintText: 'First name',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '  Last name',
+                        style: TextStyle(fontSize: 15),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: 226,
+                          height: 43,
+                          child: TextField(
+                            controller: lastname,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Color(0xff77C1C1),
+                              border: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Color(0xff1B2F6C)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                              ),
+                              hintText: 'Last name',
                             ),
                           ),
                         ),
@@ -70,6 +180,7 @@ class SignUpPage extends StatelessWidget {
                           width: 226,
                           height: 43,
                           child: TextField(
+                            controller: email,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xff77C1C1),
@@ -97,6 +208,7 @@ class SignUpPage extends StatelessWidget {
                           width: 226,
                           height: 43,
                           child: TextField(
+                            controller: password,
                             obscureText: true,
                             decoration: InputDecoration(
                               filled: true,
@@ -130,28 +242,42 @@ class SignUpPage extends StatelessWidget {
                 SizedBox(
                   height: 75,
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginPage(),
-                      ),
-                    );
+                BlocListener<LoginBloc, LoginState>(
+                  listener: (context, state) {
+                    if (state is Success) {
+                      context.read<AppBloc>().add(SignedUp());
+                    }
                   },
-                  child: Container(
-                    width: 283,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                      color: Color(0xffFFEACD),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 30,
-                          color: Color(0xff0A324D),
+                  child: InkWell(
+                    onTap: () {
+                      context.read<LoginBloc>().add(SignUp(
+                          user: SignUpInfo(
+                              firstname: firstname.text,
+                              lastname: lastname.text,
+                              email: email.text,
+                              password: password.text)));
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginPage(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 283,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                        color: Color(0xffFFEACD),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 30,
+                            color: Color(0xff0A324D),
+                          ),
                         ),
                       ),
                     ),
